@@ -242,6 +242,9 @@ export const aiApi = {
     description: string;
     volumes: string;
     existingNames?: string[];
+    worldview?: string;
+    existingRoles?: { name: string; role: string }[];
+    chapters?: string;
   }) => request<{ characters: { name: string; role: string; age: number; appearance: string; personality: string; background: string; motivation: string; relationship: string }[] }>("/ai/generate-characters", {
     method: "POST",
     body: JSON.stringify(data),

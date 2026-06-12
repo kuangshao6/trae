@@ -149,7 +149,7 @@ export async function generateCharacter(novelId: string, role: string, _descript
   };
 }
 
-export async function generateCharacters(title: string, genre: string, description: string, volumesJson: string, existingNames: string[] = []) {
+export async function generateCharacters(title: string, genre: string, description: string, volumesJson: string, existingNames: string[] = [], worldview: string = "", existingRoles: {name: string, role: string}[] = [], chapters: string = "") {
   let volumesInfo = "";
   try {
     const volumes = JSON.parse(volumesJson);
@@ -164,54 +164,51 @@ export async function generateCharacters(title: string, genre: string, descripti
     if (isAIAvailable()) {
       let prompt: string;
       if (existingNames.length > 0) {
-        prompt = `你是一位专业的网文角色设计师。请根据以下小说信息，为缺失的角色补充设定：
+        prompt = `你是一位网文角色设计师。请根据以下信息为小说查漏补缺，补充缺失的角色：
 
 标题：${title}
 题材：${genre}
 简介：${description}
+分卷框架：${volumesInfo}
+${worldview ? `世界观设定：${worldview}` : ""}
+${chapters ? `已写章节内容摘要：\n${chapters}` : ""}
 
-【分卷框架】
-${volumesInfo}
+已有角色及其定位：
+${existingRoles.length > 0 ? existingRoles.map(r => `- ${r.name}（${r.role}）`).join("\n") : existingNames.map(n => `- ${n}（定位未知）`).join("\n")}
 
-已有角色（这些角色已经有设定，不需要再生成）：${existingNames.join("、")}
+【重要】查漏补缺规则：
+1. 先检查已有角色中缺少哪些重要定位：如果已有角色中没有"主角"，必须优先从简介、分卷框架、世界观设定和章节内容中识别并生成主角；如果没有"反派"且故事有对立面，必须生成反派
+2. 从简介、分卷框架、世界观设定和章节内容中找出尚未在已有角色列表中的角色名，为这些角色生成设定
+3. 根据每个角色在故事中的核心程度判断定位：故事核心人物为"主角"，对立面为"反派"，重要但非核心为"配角"，次要为"龙套"
+4. 在主角、反派等重要角色都已存在的情况下，再考虑补充配角、龙套等
+5. 返回的角色中必须至少有1个"主角"（如果已有角色中没有主角的话）
 
-要求：
-1. 【先识别主角】从故事简介中找出主角，主角的 role 必须填"主角"，不能填"配角"
-2. 从故事简介和分卷框架中找出已有角色列表中不存在的角色名，只为这些缺失的角色生成设定（查漏补缺）
-3. 如果故事简介和分卷框架中提到的角色都已在已有角色列表中，则额外生成2个除主角外的随机角色（配角/反派/龙套），丰富故事人物
-4. 所有新生成的角色不重名，也不要与已有角色名重复
-5. 每个角色都要有鲜明的个性和独特的作用
-
-请返回JSON格式：
-{"characters": [{"name": "角色名", "role": "角色类型（主角/配角/反派/龙套）", "age": 年龄, "appearance": "外貌描写", "personality": "性格特点", "background": "背景故事", "motivation": "动机", "relationship": "与主角关系"}]}
-不要添加markdown代码块标记。`;
+请返回JSON数组，每个角色包含：name, role(主角/配角/反派/龙套), age, appearance, personality, background, motivation, relationship`;
       } else {
-        prompt = `你是一位专业的网文角色设计师。请根据以下小说信息，批量生成所有重要角色：
+        prompt = `你是一位网文角色设计师。请根据以下信息为小说生成角色：
 
 标题：${title}
 题材：${genre}
 简介：${description}
-
-【分卷框架】
-${volumesInfo}
+分卷框架：${volumesInfo}
+${worldview ? `世界观设定：${worldview}` : ""}
+${chapters ? `已写章节内容摘要：\n${chapters}` : ""}
 
 要求：
-1. 【先识别主角】从故事简介中找出主角，主角的 role 必须填"主角"，不能填"配角"。如果简介中提到了具体人物名，该人物就是主角
-2. 从故事简介和分卷框架中提取所有出现的角色名，为每个提取到的角色生成完整的角色设定
-3. 再根据分卷框架和故事简介适当补充未提及但重要的角色（如反派、关键配角等）
-4. 所有角色不重名
-5. 角色数量不固定，取决于故事中出现的角色数量，但一般3-8个
-6. 每个角色都要有鲜明的个性和独特的作用
+1. 【先识别角色】从简介、分卷框架和世界观设定中找出所有提到的角色名
+2. 【再判断类型】根据每个角色在故事中的定位判断类型：故事核心人物为"主角"，对立面为"反派"，重要但非核心为"配角"，次要为"龙套"
+3. 如果识别出的角色不足3个，根据剧情需要补充角色（如反派、关键配角等）
+4. 返回的角色中必须至少有1个"主角"，如果故事有对立面则必须有1个"反派"
+5. 为每个角色生成完整的设定
 
-请返回JSON格式：
-{"characters": [{"name": "角色名", "role": "角色类型（主角/配角/反派/龙套）", "age": 年龄, "appearance": "外貌描写", "personality": "性格特点", "background": "背景故事", "motivation": "动机", "relationship": "与主角关系"}]}
-不要添加markdown代码块标记。`;
+请返回JSON数组，每个角色包含：name, role(主角/配角/反派/龙套), age, appearance, personality, background, motivation, relationship`;
       }
       const aiResult = await callAI(prompt);
       const parsed = JSON.parse(cleanAIResponse(aiResult));
-      const characters = (parsed.characters || []).map((c: any) => ({
+      const rawCharacters = Array.isArray(parsed) ? parsed : (parsed.characters || []);
+      const characters = rawCharacters.map((c: any) => ({
         name: c.name || "未命名",
-        role: c.role || "配角",
+        role: c.role || "",
         age: c.age || 25,
         appearance: c.appearance || "",
         personality: c.personality || "",

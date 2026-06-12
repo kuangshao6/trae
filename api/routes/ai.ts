@@ -109,11 +109,11 @@ router.post("/generate-title", async (req: Request, res: Response) => {
 
 // 批量生成角色
 router.post("/generate-characters", async (req: Request, res: Response) => {
-  const { title, genre, description, volumes, existingNames } = req.body;
+  const { title, genre, description, volumes, existingNames, worldview, existingRoles, chapters } = req.body;
   if (!title || !genre) {
     return res.status(400).json({ message: "请提供标题和题材" });
   }
-  const result = await generateCharacters(title, genre, description || "", volumes || "[]", existingNames || []);
+  const result = await generateCharacters(title, genre, description || "", volumes || "[]", existingNames || [], worldview || "", existingRoles || [], chapters || "");
   res.json(result);
 });
 

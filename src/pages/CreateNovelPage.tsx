@@ -96,12 +96,33 @@ export default function CreateNovelPage() {
       });
       const novelId = novel.id;
 
+      // 如果简介过短（< 100字且非空），先用 AI 扩写
+      let finalDescription = description;
+      if (finalDescription && finalDescription.trim().length > 0 && finalDescription.trim().length < 100) {
+        setProgress("正在扩写简介...");
+        try {
+          const expandResult = await aiApi.generateOutline({
+            title: finalTitle,
+            genre: genre || "其他",
+            theme: `请将以下简短描述扩写为200-300字的故事简介，保留原始意图和关键信息，像讲故事一样自然，不要用AI套话。${genre || "原创"}题材`,
+            description: finalDescription,
+          });
+          if (expandResult?.mainOutline) {
+            finalDescription = expandResult.mainOutline;
+            // 更新作品简介
+            await novelApi.update(novelId, { description: finalDescription });
+          }
+        } catch (err) {
+          console.error("扩写简介失败:", err);
+        }
+      }
+
       // 并行调用 AI 生成
       const outlinePromise = aiApi.generateOutline({
         title: finalTitle,
         genre: genre || "其他",
         theme: `请生成一个完整的故事大纲。${genre || "原创"}题材网文`,
-        description: description || "",
+        description: finalDescription || "",
       }).catch((err) => {
         console.error("生成大纲失败:", err);
         return null;
@@ -111,13 +132,58 @@ export default function CreateNovelPage() {
       setProgress("正在生成分卷框架...");
       const outlineResult = await outlinePromise;
 
-      // 基于大纲内容批量生成角色
+      // 保存生成的大纲数据
+      if (outlineResult) {
+        // 保存简介
+        if (outlineResult.mainOutline) {
+          await novelApi.update(novelId, {
+            description: outlineResult.mainOutline,
+          });
+        } else if (finalDescription) {
+          await novelApi.update(novelId, {
+            description: finalDescription,
+          });
+        }
+        // 保存分卷框架到世界观设定
+        if (outlineResult.volumes && outlineResult.volumes.length > 0) {
+          await worldApi.create(novelId, {
+            title: "volumes",
+            category: "outline",
+            content: JSON.stringify(outlineResult.volumes),
+          });
+        }
+      }
+
+      // 生成世界观（大段文本，后续可手动分类）
+      let worldviewContent = "";
+      setProgress("正在生成世界观...");
+      try {
+        const worldviewResult = await aiApi.generateOutline({
+          title: finalTitle,
+          genre: genre || "其他",
+          theme: `请只生成世界观设定，包括时代背景、地理环境、社会结构、力量体系等。不要包含任何故事主线、剧情梗概或角色经历。像给人介绍一个世界一样自然，不要用套话。${genre || "原创"}题材`,
+          description: outlineResult?.mainOutline || finalDescription || "",
+        });
+        if (worldviewResult?.mainOutline) {
+          worldviewContent = worldviewResult.mainOutline;
+          await worldApi.create(novelId, {
+            title: "世界观设定",
+            category: "outline",
+            content: worldviewResult.mainOutline,
+          });
+        }
+      } catch (err) {
+        console.error("生成世界观失败:", err);
+      }
+
+      // 基于大纲和世界观内容批量生成角色
       setProgress("正在生成角色...");
       const charactersResult = await aiApi.generateCharacters({
         title: finalTitle,
         genre: genre || "其他",
         description: outlineResult?.mainOutline || description || "",
         volumes: outlineResult?.volumes ? JSON.stringify(outlineResult.volumes) : "[]",
+        worldview: worldviewContent,
       }).catch((err) => {
         console.error("批量生成角色失败:", err);
         return { characters: [] };
@@ -142,45 +208,6 @@ export default function CreateNovelPage() {
             console.error("保存角色失败:", err);
           }
         }
-      }
-
-      // 保存生成的大纲数据
-      if (outlineResult) {
-        // 保存简介
-        if (outlineResult.mainOutline) {
-          await novelApi.update(novelId, {
-            description: outlineResult.mainOutline,
-          });
-        }
-        // 保存分卷框架到世界观设定
-        if (outlineResult.volumes && outlineResult.volumes.length > 0) {
-          await worldApi.create(novelId, {
-            title: "volumes",
-            category: "outline",
-            content: JSON.stringify(outlineResult.volumes),
-          });
-        }
-      }
-
-      // 生成世界观（按分类逐条生成）
-      setProgress("正在生成世界观...");
-      try {
-        const worldviewResult = await aiApi.generateWorldviewByCategories({
-          title: finalTitle,
-          genre: genre || "其他",
-          description: outlineResult?.mainOutline || description || "",
-        });
-        if (worldviewResult?.items && worldviewResult.items.length > 0) {
-          for (const item of worldviewResult.items) {
-            await worldApi.create(novelId, {
-              title: item.title || item.category,
-              category: item.category || "世界观",
-              content: item.content,
-            });
-          }
-        }
-      } catch (err) {
-        console.error("生成世界观失败:", err);
       }
 
       // 跳转到大纲页面

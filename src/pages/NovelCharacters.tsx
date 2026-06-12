@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Plus, Edit3, Trash2, User, Sparkles } from "lucide-react";
-import { novelApi, characterApi, worldApi, aiApi, Character } from "../lib/api";
+import { novelApi, characterApi, worldApi, chapterApi, aiApi, Character } from "../lib/api";
 import Layout, { NovelSidebarNav } from "../components/Layout";
 
 export default function NovelCharacters() {
@@ -93,8 +93,20 @@ export default function NovelCharacters() {
       const volumesSetting = worldSettings.find((w) => w.title === "volumes");
       const volumesJson = volumesSetting ? volumesSetting.content : "[]";
 
-      // 收集已有角色名
+      // 读取世界观设定内容
+      const worldviewSetting = worldSettings.find((w) => w.title === "世界观设定");
+      const worldviewContent = worldviewSetting ? worldviewSetting.content : "";
+
+      // 读取章节内容摘要
+      const chaptersList = await chapterApi.list(id);
+      const chaptersSummary = chaptersList
+        .map((ch) => `${ch.title}：${ch.summary || (ch.content ? ch.content.slice(0, 200) : "")}`)
+        .join("\n")
+        .slice(0, 3000); // 限制总长度，避免 prompt 过长
+
+      // 收集已有角色名和定位
       const existingNames = characters.map((c) => c.name);
+      const existingRoles = characters.map((c) => ({ name: c.name, role: c.role }));
 
       // 调用AI查漏补缺生成角色
       const result = await aiApi.generateCharacters({
@@ -103,6 +115,9 @@ export default function NovelCharacters() {
         description: novel.description || "",
         volumes: volumesJson,
         existingNames,
+        worldview: worldviewContent,
+        existingRoles,
+        chapters: chaptersSummary,
       });
 
       // 保存生成的角色
