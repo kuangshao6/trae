@@ -1,0 +1,8 @@
+- [ ] ErrorBoundary 捕获并显示具体错误消息和堆栈信息
+- [ ] Layout 组件中不再有 isAuthenticated 检查和强制跳转
+- [ ] handleGenerateOutline 使用 worldSettings 状态替代 worldApi.list
+- [ ] handleGenerateOutline 使用 characters 状态替代 characterApi.list
+- [ ] handleGenerateOutline 使用 chapters 状态替代 chapterApi.list
+- [ ] handleGenerateContent 使用 chapters 状态替代 chapterApi.list
+- [ ] ChapterEditor 新增 chapters 状态，loadData 中保存
+- [ ] 在系统浏览器中点击"生成大纲"不再崩溃

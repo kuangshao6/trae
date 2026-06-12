@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ai-novelist-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npx tsx api/server.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.deepseek.com
+      - key: AI_MODEL
+        value: deepseek-chat
+      - key: FRONTEND_URL
+        sync: false

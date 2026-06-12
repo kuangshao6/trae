@@ -1,0 +1,9 @@
+- [x] 访问 /novels/create 显示创建作品独立页面
+- [x] 题材以卡片网格形式展示，点击选中高亮
+- [x] 目标字数有快捷按钮选择
+- [x] AI生成简介按钮可用，点击后生成简介填入输入框
+- [x] 填写信息后点击"创建作品"成功创建并跳转到作品详情页
+- [x] 点击"取消"返回上一页
+- [x] Dashboard.tsx 中"开始创作"按钮跳转到 /novels/create
+- [x] MyNovelsPage.tsx 中"新建作品"按钮跳转到 /novels/create
+- [x] Dashboard.tsx 和 MyNovelsPage.tsx 中弹窗代码已移除

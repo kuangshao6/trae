@@ -1,0 +1,5 @@
+- [x] App.tsx 中有全局 ErrorBoundary，渲染错误时显示友好提示而非白屏
+- [x] handleGenerateOutline 中 chapterApi.list(id) 有独立 try/catch，失败不崩溃
+- [x] handleGenerateContent 中 chapterApi.list(id) 有独立 try/catch，失败不崩溃
+- [x] request() 函数对 JSON.parse 有 try/catch 保护，非 JSON 响应不抛 SyntaxError
+- [x] 点击"生成大纲"按钮不再导致白屏

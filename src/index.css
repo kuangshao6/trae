@@ -1,0 +1,306 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: "Noto Sans SC", system-ui, sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #faf8f5;
+  color: #2d2219;
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-accent-500 text-white font-medium rounded-lg hover:bg-accent-600 transition-colors shadow-soft;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-ink-100 text-ink-800 font-medium rounded-lg hover:bg-ink-200 transition-colors;
+  }
+
+  .btn-ghost {
+    @apply px-4 py-2 text-ink-600 font-medium rounded-lg hover:bg-ink-100 transition-colors;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 bg-white border border-ink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-400 focus:border-transparent transition-all text-ink-800;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-soft border border-ink-100;
+  }
+
+  .card-hover {
+    @apply bg-white rounded-2xl shadow-soft border border-ink-100 hover:shadow-card hover:border-ink-200 transition-all cursor-pointer;
+  }
+
+  .text-editor {
+    @apply font-serif text-ink-800 leading-loose text-lg;
+  }
+
+  .tag {
+    @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-ink-100 text-ink-700;
+  }
+
+  .tag-accent {
+    @apply inline-flex items-center px-3 py-1 text-xs font-medium rounded-full bg-accent-100 text-accent-700;
+  }
+}
+
+/* ===== 手绘风格组件 ===== */
+
+/* 手绘边框 - 使用 SVG 滤镜模拟抖动线条 */
+.sketchy {
+  position: relative;
+  border: 2px solid #4e3b2a;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+}
+
+.sketchy-light {
+  position: relative;
+  border: 2px solid #d4c4a4;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+}
+
+.sketchy-accent {
+  position: relative;
+  border: 2px solid #f97316;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+}
+
+/* 手绘按钮 */
+.btn-sketchy {
+  @apply px-5 py-2.5 font-medium transition-all cursor-pointer;
+  border: 2px solid #4e3b2a;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  background: #fff;
+  color: #4e3b2a;
+  position: relative;
+}
+.btn-sketchy:hover {
+  background: #faf8f5;
+  transform: translateY(-2px) rotate(-0.5deg);
+  box-shadow: 3px 3px 0 #4e3b2a;
+}
+.btn-sketchy:active {
+  transform: translateY(0) rotate(0deg);
+  box-shadow: 1px 1px 0 #4e3b2a;
+}
+
+/* 手绘主按钮 */
+.btn-sketchy-primary {
+  @apply px-5 py-2.5 font-medium transition-all cursor-pointer;
+  border: 2px solid #4e3b2a;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  background: #4e3b2a;
+  color: #faf8f5;
+  position: relative;
+}
+.btn-sketchy-primary:hover {
+  transform: translateY(-2px) rotate(0.5deg);
+  box-shadow: 3px 3px 0 rgba(78, 59, 42, 0.4);
+}
+.btn-sketchy-primary:active {
+  transform: translateY(0) rotate(0deg);
+  box-shadow: 1px 1px 0 rgba(78, 59, 42, 0.4);
+}
+
+/* 手绘卡片 */
+.card-sketchy {
+  @apply bg-white p-5;
+  border: 2px solid #e6ddc9;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 3px 3px 0 #f2ede4;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-sketchy:hover {
+  box-shadow: 5px 5px 0 #e6ddc9;
+  border-color: #d4c4a4;
+}
+
+/* 手绘输入框 */
+.input-sketchy {
+  @apply w-full px-4 py-2.5 bg-white transition-all text-ink-800;
+  border: 2px solid #d4c4a4;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  outline: none;
+}
+.input-sketchy:focus {
+  border-color: #f97316;
+  box-shadow: 3px 3px 0 rgba(249, 115, 22, 0.15);
+  transform: rotate(-0.3deg);
+}
+.input-sketchy::placeholder {
+  color: #bfa578;
+  font-family: "Ma Shan Zheng", cursive;
+}
+
+/* 手绘标签 */
+.tag-sketchy {
+  @apply inline-flex items-center px-3 py-1 text-xs font-medium;
+  border: 1.5px solid #d4c4a4;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  background: #faf8f5;
+  color: #6f533b;
+}
+
+/* 手绘标题字体 */
+.font-sketchy {
+  font-family: "Ma Shan Zheng", "ZCOOL KuaiLe", cursive;
+}
+
+/* 手绘下划线装饰 */
+.underline-sketchy {
+  position: relative;
+  display: inline-block;
+}
+.underline-sketchy::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  right: -4px;
+  height: 8px;
+  background: rgba(249, 115, 22, 0.25);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  transform: rotate(-0.5deg);
+}
+
+/* 手绘纸张纹理背景 */
+.bg-paper {
+  background-color: #faf8f5;
+  background-image:
+    radial-gradient(circle, #e6ddc9 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* 手绘涂鸦装饰 - 圆圈 */
+.doodle-circle {
+  position: relative;
+}
+.doodle-circle::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border: 2px solid #f97316;
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* 手绘涂鸦装饰 - 星星 */
+.doodle-star::after {
+  content: "✦";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  color: #f97316;
+  opacity: 0.6;
+}
+
+/* 手绘波浪分割线 */
+.divider-sketchy {
+  border: none;
+  height: 3px;
+  background: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='4'%3E%3Cpath d='M0 2 Q25 0 50 2 T100 2 T150 2 T200 2' stroke='%23d4c4a4' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 200px 4px;
+  margin: 1rem 0;
+}
+
+/* 手绘抖动动画 */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-1deg); }
+  75% { transform: rotate(1deg); }
+}
+.animate-wiggle:hover {
+  animation: wiggle 0.3s ease-in-out;
+}
+
+/* 手绘"画出"动画 */
+@keyframes draw-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.animate-draw-in {
+  animation: draw-in 0.6s ease-out forwards;
+}
+
+/* ===== 原有样式 ===== */
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f2ede4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4c4a4;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #bfa578;
+}
+
+/* 文本选择 */
+::selection {
+  background-color: #fdba74;
+  color: #2d2219;
+}
+
+/* 加载动画 */
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}

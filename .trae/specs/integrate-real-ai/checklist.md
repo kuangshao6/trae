@@ -1,0 +1,13 @@
+- [x] AI 服务层创建完成，支持 OpenAI 兼容 API 调用
+- [x] .env 配置支持 AI_API_KEY、AI_BASE_URL、AI_MODEL
+- [x] 无 API Key 时自动降级到本地模板模式
+- [x] 大纲生成功能使用 AI API 生成高质量内容
+- [x] 章节生成功能使用 AI API 生成连贯内容
+- [x] 续写/扩写/润色/冲突补充功能使用 AI API
+- [x] 短篇故事生成器使用 AI API
+- [x] 剧本改写工具使用 AI API
+- [x] 角色生成功能使用 AI API
+- [x] 爽点设计功能使用 AI API
+- [x] /tools/ideation 路由指向独立构思工具页面
+- [x] AI 构思工具页面功能完整（大纲生成、分卷框架、爽点设计）
+- [x] AI API 不可用时降级到本地模板，有提示信息

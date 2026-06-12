@@ -1,0 +1,7 @@
+- [x] 创建作品时世界观使用 aiApi.generateWorldviewByCategories 接口，不再复用 generateOutline
+- [x] 世界观结果按分类逐条存入 worldApi
+- [x] generateOutline 的 AI prompt 强化对用户 description 的引用，生成内容紧扣用户输入
+- [x] generateCharacters 的 AI prompt 包含"从作品简介中提取所有角色"的强制指令
+- [x] generateCharacters 的 AI prompt 包含"先识别主角"的指令
+- [x] generateCharacters 的 AI prompt 强调主角 role 必须填"主角"
+- [x] generateCharacters 降级逻辑中第一个角色为"主角"
