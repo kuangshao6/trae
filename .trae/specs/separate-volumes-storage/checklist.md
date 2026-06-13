@@ -1,0 +1,8 @@
+- [x] VolumeRecord 数据模型和 volumeStore 已创建，包含完整的 CRUD 操作
+- [x] 分卷框架路由已添加（GET/POST/PUT/DELETE/BATCH）
+- [x] 旧数据迁移逻辑已实现：worldSettings 中 title="volumes" 的数据自动迁移到 volumes 存储
+- [x] 前端 volumeApi 已创建，包含 list/create/update/delete/batchSave 方法
+- [x] CreateNovelPage.tsx 分卷框架保存到 volumeApi 而非 worldApi
+- [x] OutlinePage.tsx 分卷框架从 volumeApi 加载和保存
+- [x] NovelModule.tsx 已移除 title === "volumes" 的过滤逻辑
+- [x] TypeScript 编译无错误

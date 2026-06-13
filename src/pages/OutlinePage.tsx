@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { BookOpen, Users, Globe, Plus, Save, ArrowLeft, Loader2, ChevronRight, Trash2 } from "lucide-react";
-import { novelApi, characterApi, worldApi } from "../lib/api";
+import { novelApi, characterApi, worldApi, volumeApi } from "../lib/api";
 import type { Character } from "../lib/api";
 import Layout from "../components/Layout";
 
@@ -9,6 +9,7 @@ interface VolumeItem {
   title: string;
   coreConflict: string;
   chapterCount: number;
+  description: string;
 }
 
 interface CharacterItem {
@@ -53,21 +54,19 @@ export default function OutlinePage() {
         }))
       );
 
-      // 加载世界观设定（分卷框架 + 世界观）
+      // 加载分卷框架
+      const volumesList = await volumeApi.list(novelId);
+      setVolumes(volumesList.map((v: any) => ({
+        title: v.title || "",
+        coreConflict: v.coreConflict || "",
+        chapterCount: v.chapterCount || 10,
+        description: v.description || "",
+      })));
+      // 加载世界观
       const worldSettings = await worldApi.list(novelId);
-      const volumesSetting = worldSettings.find((w) => w.title === "volumes");
-      if (volumesSetting) {
-        try {
-          setVolumes(JSON.parse(volumesSetting.content));
-        } catch {
-          setVolumes([]);
-        }
-      }
-      // 加载世界观：合并所有非volumes的世界观条目
-      const worldviewItems = worldSettings.filter((w) => w.title !== "volumes");
-      if (worldviewItems.length > 0) {
-        const combined = worldviewItems
-          .map((w) => (worldviewItems.length > 1 ? `【${w.title}】\n${w.content}` : w.content))
+      if (worldSettings.length > 0) {
+        const combined = worldSettings
+          .map((w) => (worldSettings.length > 1 ? `【${w.title}】\n${w.content}` : w.content))
           .join("\n\n");
         setWorldview(combined);
       }
@@ -83,7 +82,7 @@ export default function OutlinePage() {
   }, [loadData]);
 
   const addVolume = () => {
-    setVolumes([...volumes, { title: "", coreConflict: "", chapterCount: 10 }]);
+    setVolumes([...volumes, { title: "", coreConflict: "", chapterCount: 10, description: "" }]);
   };
 
   const removeVolume = (index: number) => {
@@ -117,24 +116,16 @@ export default function OutlinePage() {
       // 1. 更新作品信息
       await novelApi.update(novelId, { title, description });
 
-      // 2. 保存分卷框架到世界观
-      const worldSettings = await worldApi.list(novelId);
-      const existingVolumes = worldSettings.find((w) => w.title === "volumes");
-      if (existingVolumes) {
-        await worldApi.update(novelId, existingVolumes.id, {
-          title: "volumes",
-          category: "outline",
-          content: JSON.stringify(volumes),
-        });
-      } else {
-        await worldApi.create(novelId, {
-          title: "volumes",
-          category: "outline",
-          content: JSON.stringify(volumes),
-        });
-      }
+      // 2. 保存分卷框架
+      await volumeApi.batchSave(novelId, volumes.map((v) => ({
+        title: v.title || "",
+        description: v.description || "",
+        chapterCount: v.chapterCount || 10,
+        coreConflict: v.coreConflict || "",
+      })));
 
       // 3. 保存世界观设定
+      const worldSettings = await worldApi.list(novelId);
       const existingWorldview = worldSettings.find((w) => w.title === "世界观设定");
       if (existingWorldview) {
         await worldApi.update(novelId, existingWorldview.id, {
@@ -383,6 +374,7 @@ export default function OutlinePage() {
                       <option value="主角">主角</option>
                       <option value="配角">配角</option>
                       <option value="反派">反派</option>
+                      <option value="龙套">龙套</option>
                     </select>
                   </div>
                 </div>

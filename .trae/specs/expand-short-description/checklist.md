@@ -1,0 +1,4 @@
+- [x] CreateNovelPage handleCreate 中简介 < 100字且非空时自动调用 AI 扩写
+- [x] 扩写后的 mainOutline 写入作品简介（novelApi.update）
+- [x] 扩写后的内容作为后续大纲生成的 description 输入
+- [x] 扩写过程显示"正在扩写简介..."进度提示

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { novelStore, chapterStore, characterStore, worldSettingStore, foreshadowStore, constraintStore } from "../utils/storage";
+import { novelStore, chapterStore, characterStore, worldSettingStore, foreshadowStore, constraintStore, volumeStore } from "../utils/storage";
 import { generateCharacter, generateChapter, generateOutline, generateHighlights } from "../utils/aiGenerator";
 
 const router = Router();
@@ -260,7 +260,7 @@ router.post("/:id/characters", async (req: Request, res: Response) => {
     const character = await characterStore.createAsync({
       novelId: req.params.id,
       name: rest.name || "新角色",
-      role: rest.role || "配角",
+      role: role || rest.role || "配角",
       age: rest.age || 25,
       appearance: rest.appearance || "",
       personality: rest.personality || "",
@@ -593,6 +593,97 @@ router.post("/:id/highlights", async (req: Request, res: Response) => {
     res.json(result);
   } catch (error: any) {
     res.status(500).json({ message: error.message || "服务器错误" });
+  }
+});
+
+// ========== 分卷框架 ==========
+
+// 获取分卷列表
+router.get("/:id/volumes", async (req: Request, res: Response) => {
+  try {
+    const volumes = await volumeStore.findByNovelIdAsync(req.params.id);
+    res.json(volumes);
+  } catch (err) {
+    res.status(500).json({ message: "获取分卷失败" });
+  }
+});
+
+// 批量保存分卷框架
+router.post("/:id/volumes/batch", async (req: Request, res: Response) => {
+  try {
+    const { volumes } = req.body;
+    if (!Array.isArray(volumes)) {
+      return res.status(400).json({ message: "请提供分卷数组" });
+    }
+    // 先删除该小说的所有旧分卷
+    const existing = await volumeStore.findByNovelIdAsync(req.params.id);
+    for (const vol of existing) {
+      await volumeStore.removeAsync(vol.id);
+    }
+    // 创建新的分卷
+    const created = [];
+    for (const vol of volumes) {
+      const record = await volumeStore.createAsync({
+        novelId: req.params.id,
+        title: vol.title || "",
+        description: vol.description || "",
+        chapterCount: vol.chapterCount || 10,
+        coreConflict: vol.coreConflict || "",
+      });
+      created.push(record);
+    }
+    res.json(created);
+  } catch (err) {
+    res.status(500).json({ message: "保存分卷失败" });
+  }
+});
+
+// 创建单个分卷
+router.post("/:id/volumes", async (req: Request, res: Response) => {
+  try {
+    const { title, description, chapterCount, coreConflict } = req.body;
+    const volume = await volumeStore.createAsync({
+      novelId: req.params.id,
+      title: title || "",
+      description: description || "",
+      chapterCount: chapterCount || 10,
+      coreConflict: coreConflict || "",
+    });
+    res.json(volume);
+  } catch (err) {
+    res.status(500).json({ message: "创建分卷失败" });
+  }
+});
+
+// 更新分卷
+router.put("/:id/volumes/:volId", async (req: Request, res: Response) => {
+  try {
+    const { title, description, chapterCount, coreConflict } = req.body;
+    const updated = await volumeStore.updateAsync(req.params.volId, {
+      title,
+      description,
+      chapterCount,
+      coreConflict,
+    });
+    if (!updated) {
+      return res.status(404).json({ message: "分卷不存在" });
+    }
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: "更新分卷失败" });
+  }
+});
+
+// 删除分卷
+router.delete("/:id/volumes/:volId", async (req: Request, res: Response) => {
+  try {
+    const success = await volumeStore.removeAsync(req.params.volId);
+    if (!success) {
+      return res.status(404).json({ message: "分卷不存在" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ message: "删除分卷失败" });
   }
 });
 

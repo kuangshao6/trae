@@ -173,6 +173,28 @@ export const worldApi = {
     request<{ success: boolean }>(`/novels/${novelId}/world/${id}`, { method: "DELETE" }),
 };
 
+// ========== 分卷 ==========
+export interface VolumeItem {
+  id?: string;
+  novelId?: string;
+  title: string;
+  description: string;
+  chapterCount: number;
+  coreConflict: string;
+}
+
+export const volumeApi = {
+  list: (novelId: string) => request<VolumeItem[]>(`/novels/${novelId}/volumes`),
+  create: (novelId: string, data: Omit<VolumeItem, "id" | "novelId">) =>
+    request<VolumeItem>(`/novels/${novelId}/volumes`, { method: "POST", body: JSON.stringify(data) }),
+  update: (novelId: string, volId: string, data: Partial<VolumeItem>) =>
+    request<VolumeItem>(`/novels/${novelId}/volumes/${volId}`, { method: "PUT", body: JSON.stringify(data) }),
+  delete: (novelId: string, volId: string) =>
+    request<void>(`/novels/${novelId}/volumes/${volId}`, { method: "DELETE" }),
+  batchSave: (novelId: string, volumes: Omit<VolumeItem, "id" | "novelId">[]) =>
+    request<VolumeItem[]>(`/novels/${novelId}/volumes/batch`, { method: "POST", body: JSON.stringify({ volumes }) }),
+};
+
 // ========== 伏笔 ==========
 export interface Foreshadow {
   id: string;

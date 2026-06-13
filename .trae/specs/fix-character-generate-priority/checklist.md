@@ -1,0 +1,9 @@
+- [x] generateCharacters 函数签名增加 existingRoles 和 chapters 参数
+- [x] generateCharacters prompt 在已有角色时优先补充缺失的重要角色（主角、反派）
+- [x] generateCharacters prompt 列出已有角色及其定位
+- [x] generateCharacters prompt 包含章节内容摘要
+- [x] ai.ts 路由中 generate-characters 传递 existingRoles 和 chapters 参数
+- [x] api.ts 中 generateCharacters 方法增加 existingRoles 和 chapters 参数
+- [x] NovelCharacters handleAiGenerate 读取世界观设定传给 worldview 参数
+- [x] NovelCharacters handleAiGenerate 读取章节内容传给 chapters 参数
+- [x] NovelCharacters handleAiGenerate 传入已有角色的定位信息

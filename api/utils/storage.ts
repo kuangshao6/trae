@@ -17,6 +17,7 @@ interface DataStore {
   foreshadows: ForeshadowRecord[];
   constraints: ConstraintRecord[];
   chapters: ChapterRecord[];
+  volumes: VolumeRecord[];
 }
 
 interface UserRecord {
@@ -102,6 +103,16 @@ interface ChapterRecord {
   updatedAt: string;
 }
 
+interface VolumeRecord {
+  id: string;
+  novelId: string;
+  title: string;
+  description: string;
+  chapterCount: number;
+  coreConflict: string;
+  createdAt: string;
+}
+
 // ========== 工具函数 ==========
 
 export function generateId(): string {
@@ -143,6 +154,7 @@ function initializeStore(): DataStore {
     foreshadows: [],
     constraints: [],
     chapters: [],
+    volumes: [],
   };
 }
 
@@ -158,8 +170,37 @@ function loadStore(): DataStore {
   ensureDataDir();
   try {
     if (fs.existsSync(DATA_FILE)) {
-      const raw = fs.readFileSync(DATA_FILE, "utf-8");
-      return JSON.parse(raw);
+      const raw = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+      // 数据迁移：将 worldSettings 中 title="volumes" 的数据迁移到 volumes 存储
+      if (raw.volumes === undefined) {
+        raw.volumes = [];
+      }
+      const volumesEntries = raw.worldSettings?.filter((w: any) => w.title === "volumes") || [];
+      if (volumesEntries.length > 0) {
+        for (const entry of volumesEntries) {
+          try {
+            const volumesData = JSON.parse(entry.content);
+            if (Array.isArray(volumesData)) {
+              for (const vol of volumesData) {
+                raw.volumes.push({
+                  id: generateId(),
+                  novelId: entry.novelId,
+                  title: vol.title || "",
+                  description: vol.description || "",
+                  chapterCount: vol.chapterCount || 10,
+                  coreConflict: vol.coreConflict || "",
+                  createdAt: entry.createdAt || now(),
+                });
+              }
+            }
+          } catch {
+            // 解析失败则跳过
+          }
+        }
+        // 删除已迁移的 worldSettings 条目
+        raw.worldSettings = raw.worldSettings.filter((w: any) => w.title !== "volumes");
+      }
+      return raw;
     }
   } catch {
     // ignore parse errors
@@ -383,6 +424,7 @@ export const novelStore = {
     inMemoryStore.foreshadows = inMemoryStore.foreshadows.filter((f) => f.novelId !== id);
     inMemoryStore.constraints = inMemoryStore.constraints.filter((c) => c.novelId !== id);
     inMemoryStore.chapters = inMemoryStore.chapters.filter((c) => c.novelId !== id);
+    inMemoryStore.volumes = inMemoryStore.volumes.filter((v) => v.novelId !== id);
     scheduleSave();
     return inMemoryStore.novels.length < before;
   },
@@ -396,6 +438,7 @@ export const novelStore = {
       inMemoryStore.foreshadows = inMemoryStore.foreshadows.filter((f) => f.novelId !== id);
       inMemoryStore.constraints = inMemoryStore.constraints.filter((c) => c.novelId !== id);
       inMemoryStore.chapters = inMemoryStore.chapters.filter((c) => c.novelId !== id);
+      inMemoryStore.volumes = inMemoryStore.volumes.filter((v) => v.novelId !== id);
       scheduleSave();
       return inMemoryStore.novels.length < before;
     }
@@ -919,5 +962,83 @@ export const chapterStore = {
     const { error } = await supabase!.from("chapters").delete().eq("id", id);
     if (error) throw error;
     return true;
+  },
+};
+
+// ========== 卷存储 ==========
+
+export const volumeStore = {
+  findAll() {
+    console.warn("volumeStore.findAll() 不支持 Supabase 模式，请使用异步方法");
+    return inMemoryStore.volumes;
+  },
+  async findAllAsync() {
+    if (await isSupabaseAvailable()) {
+      const { data, error } = await supabase.from("volumes").select("*");
+      if (error) throw error;
+      return data.map(toCamelCase);
+    }
+    return inMemoryStore.volumes;
+  },
+  findByNovelId(novelId: string) {
+    console.warn("volumeStore.findByNovelId() 同步方法在 Supabase 模式下不可用，请使用异步方法");
+    return inMemoryStore.volumes.filter((v) => v.novelId === novelId);
+  },
+  async findByNovelIdAsync(novelId: string) {
+    if (await isSupabaseAvailable()) {
+      const { data, error } = await supabase.from("volumes").select("*").eq("novel_id", novelId);
+      if (error) throw error;
+      return data.map(toCamelCase);
+    }
+    return inMemoryStore.volumes.filter((v) => v.novelId === novelId);
+  },
+  create(data: Omit<VolumeRecord, "id" | "createdAt">) {
+    const volume: VolumeRecord = {
+      ...data,
+      id: generateId(),
+      createdAt: now(),
+    };
+    inMemoryStore.volumes.push(volume);
+    saveStore(inMemoryStore);
+    return volume;
+  },
+  async createAsync(data: Omit<VolumeRecord, "id" | "createdAt">) {
+    if (await isSupabaseAvailable()) {
+      const row = toSnakeCase({ ...data, id: generateId(), createdAt: now() });
+      const { data: created, error } = await supabase.from("volumes").insert(row).select().single();
+      if (error) throw error;
+      return toCamelCase(created) as VolumeRecord;
+    }
+    const volume = this.create(data);
+    return volume;
+  },
+  update(id: string, data: Partial<VolumeRecord>) {
+    const idx = inMemoryStore.volumes.findIndex((v) => v.id === id);
+    if (idx === -1) return null;
+    inMemoryStore.volumes[idx] = { ...inMemoryStore.volumes[idx], ...data };
+    saveStore(inMemoryStore);
+    return inMemoryStore.volumes[idx];
+  },
+  async updateAsync(id: string, data: Partial<VolumeRecord>) {
+    if (await isSupabaseAvailable()) {
+      const { data: updated, error } = await supabase.from("volumes").update(toSnakeCase(data)).eq("id", id).select().single();
+      if (error) throw error;
+      return toCamelCase(updated) as VolumeRecord;
+    }
+    return this.update(id, data);
+  },
+  remove(id: string) {
+    const before = inMemoryStore.volumes.length;
+    inMemoryStore.volumes = inMemoryStore.volumes.filter((v) => v.id !== id);
+    saveStore(inMemoryStore);
+    return inMemoryStore.volumes.length < before;
+  },
+  async removeAsync(id: string) {
+    if (await isSupabaseAvailable()) {
+      const { error } = await supabase.from("volumes").delete().eq("id", id);
+      if (error) throw error;
+      return true;
+    }
+    return this.remove(id);
   },
 };

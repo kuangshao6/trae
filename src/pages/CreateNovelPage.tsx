@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles, ChevronRight, Loader2 } from "lucide-react";
-import { novelApi, aiApi, worldApi, characterApi } from "../lib/api";
+import { novelApi, aiApi, worldApi, characterApi, volumeApi } from "../lib/api";
 import Layout from "../components/Layout";
 
 const GENRES = [
@@ -144,13 +144,14 @@ export default function CreateNovelPage() {
             description: finalDescription,
           });
         }
-        // 保存分卷框架到世界观设定
+        // 保存分卷框架
         if (outlineResult.volumes && outlineResult.volumes.length > 0) {
-          await worldApi.create(novelId, {
-            title: "volumes",
-            category: "outline",
-            content: JSON.stringify(outlineResult.volumes),
-          });
+          await volumeApi.batchSave(novelId, outlineResult.volumes.map((v: any) => ({
+            title: v.title || "",
+            description: v.description || "",
+            chapterCount: v.chapterCount || 10,
+            coreConflict: v.coreConflict || "",
+          })));
         }
       }
 

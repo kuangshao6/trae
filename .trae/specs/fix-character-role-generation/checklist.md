@@ -1,0 +1,8 @@
+- [x] generateCharacters 函数签名增加 worldview 参数
+- [x] generateCharacters prompt 要求 AI 先从简介/分卷/世界观中识别角色，再判断类型
+- [x] generateCharacters prompt 包含【世界观设定】段落
+- [x] generateCharacters 返回值中 role 不再默认为"配角"
+- [x] ai.ts 路由中 generate-characters 传递 worldview 参数
+- [x] api.ts 中 generateCharacters 方法增加 worldview 参数
+- [x] CreateNovelPage handleCreate 流程顺序改为：大纲 → 世界观 → 角色
+- [x] CreateNovelPage 将世界观内容传给 generateCharacters

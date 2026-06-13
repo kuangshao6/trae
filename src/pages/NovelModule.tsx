@@ -72,13 +72,12 @@ export default function NovelModule({ type }: { type: ModuleType }) {
     try {
       const [n, list] = await Promise.all([novelApi.get(id), api.list(id)]);
       setNovel(n);
-      // 世界观页面：过滤掉volumes条目和已分类后的旧outline条目
+      // 世界观页面：过滤掉已分类后的旧outline条目
       const filtered = type === "world"
         ? list.filter((item: any) => {
-            if (item.title === "volumes") return false;
             // 如果已有分类条目（非outline），则隐藏旧的outline条目
             if (item.category === "outline") {
-              const hasCategorized = list.some((i: any) => i.category !== "outline" && i.title !== "volumes");
+              const hasCategorized = list.some((i: any) => i.category !== "outline");
               return !hasCategorized;
             }
             return true;
