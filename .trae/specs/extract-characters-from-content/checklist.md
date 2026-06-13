@@ -1,0 +1,5 @@
+- [x] generateCharacters 首次生成 prompt 已改为"基于已生成的所有内容识别并生成角色"
+- [x] generateCharacters 查漏补缺 prompt 已改为"基于已生成的所有内容识别角色"
+- [x] prompt 中强调角色信息必须基于已有内容推断，不得脱离原文编造
+- [x] prompt 中保留"不足3个时补充，保证至少3个角色"
+- [x] TypeScript 编译无错误
